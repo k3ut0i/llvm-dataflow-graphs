@@ -1,6 +1,6 @@
 dependencies:
     pre:
-        - apt-get install llvm clang++  build-essential
+        - llvm clang++ build-essential
 
 
 test:
