@@ -1,0 +1,8 @@
+dependecies:
+    pre:
+        - apt-get install llvm clang++  build-essential
+
+
+test:
+    override:
+        - make test-vp
