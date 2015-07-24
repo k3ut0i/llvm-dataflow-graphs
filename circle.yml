@@ -1,8 +1,0 @@
-dependencies:
-    pre:
-        - sudo apt-get install llvm  build-essential
-
-
-test:
-    override:
-        - make test-vp

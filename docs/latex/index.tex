@@ -1,0 +1,30 @@
+\href{https://circleci.com/gh/k3ut0i/llvm-dataflow-graphs}{\tt !\mbox{[}Build\mbox{]}(https\+://circleci.\+com/gh/k3ut0i/xmonad-\/conf.\+svg?style=shield\&circle-\/token=\+:circle-\/token)}
+
+This is similar to graph-\/llvm-\/ir by pfalcon. but there seems to be some problems for it.
+
+Current Status\+:
+\begin{DoxyEnumerate}
+\item Control flow is good per function. should add?? between function blocks and calling statements??.
+\item Data flow just getting started. It\textquotesingle{}s sample test code. ```c 
+\begin{DoxyCode}
+\textcolor{preprocessor}{#include <stdio.h>}
+\textcolor{comment}{/*\{\{\{*/}
+\textcolor{keywordtype}{int} f0(\textcolor{keywordtype}{int} x0 , \textcolor{keywordtype}{int} x6)\{
+    \textcolor{keywordtype}{int} ans = 0;
+    ans += (x0>x6)? x0: x6;
+    \textcolor{keywordflow}{return} ans;
+\}
+\textcolor{comment}{/*\}\}\}*/}
+\textcolor{keywordtype}{int} piped\_x0, piped\_x1;
+
+\textcolor{keywordtype}{int} main()
+\{
+    piped\_x0 = 0;
+    piped\_x1 = 1;
+    printf(\textcolor{stringliteral}{"%d\(\backslash\)n"}, f0(piped\_x0, piped\_x1));
+\}
+\end{DoxyCode}
+ ```c
+\end{DoxyEnumerate}
+
+Output Dot image  
