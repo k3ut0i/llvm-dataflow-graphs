@@ -16,20 +16,23 @@ namespace datautils{
     typedef std::list<node> node_list;
     typedef std::list<edge> edge_list;
     struct DataWorker : llvm::ModulePass{
-    static char ID;
-    DataWorker();
-    bool runOnModule(llvm::Module &M);
+        static char ID;
+        DataWorker();
+        bool runOnModule(llvm::Module &M);
         private:
-    bool dumpGlobals(std::ofstream &);
-    bool dumpDataflowEdges(std::ofstream&, llvm::Function &);
-    bool dumpNodes(std::ofstream&, llvm::Function &);
-    bool dumpControlflowEdges(std::ofstream&, llvm::Function &);
-    bool dumpFunction(std::ofstream&, llvm::Function &);
-    bool dumpCompleteDiGraph(std::ofstream&);
-    
-    std::list<node> globals;
-    std::map<llvm::Function*, edge_list> func_edges;
-    std::map<llvm::Function*, node_list> func_nodes;
+        bool dumpGlobals(std::ofstream &);
+        bool dumpDataflowEdges(std::ofstream&, llvm::Function &);
+        bool dumpNodes(std::ofstream&, llvm::Function &);
+        bool dumpControlflowEdges(std::ofstream&, llvm::Function &);
+        bool dumpDataflowEdges(std::ofstream&);
+        bool dumpFunction(std::ofstream&, llvm::Function &);
+        bool dumpCompleteDiGraph(std::ofstream&);
+        std::string indent = "";
+        std::list<node> globals;
+        std::map<llvm::Function*, edge_list> func_edges_ctrl;
+        std::map<llvm::Function*, node_list> func_nodes_ctrl;
+
+        std::list<edge_list> data_flow_edges;
     };
     static unsigned int num = 0;
     std::string getvaluestaticname(llvm::Value* val)
