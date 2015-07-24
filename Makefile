@@ -1,4 +1,4 @@
-.PHONY:	all test-vp clean
+.PHONY:	all test-vp clean docs
 
 
 all: libdataflow.so
@@ -21,3 +21,6 @@ graph: ctrl-data.png
 
 ctrl-data.png: test-vp
 	dot -Tpng ctrl-data.dot -o ctrl-data.png
+
+docs:   test-vp graph
+	doxygen docs/Doxyfile

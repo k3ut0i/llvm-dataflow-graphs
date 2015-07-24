@@ -7,9 +7,9 @@ Current Status:
 1.  Control flow is good per function. should add?? between function blocks and calling
     statements??.
 2.  Data flow just getting started.
-
-Sample test code.
+It's sample test code.
 ```c
+~~~{.c}
 #include <stdio.h>
 /*{{{*////Function Declarations.
 int f0(int x0 , int x6){
@@ -26,10 +26,10 @@ int main()
     piped_x1 = 1;
     printf("%d\n", f0(piped_x0, piped_x1));
 }
+~~~
 ```c
 
-Output Dot image:
-![dot file][ctrl-data.png]
+Output Dot image
+![dotfile](https://raw.githubusercontent.com/k3ut0i/llvm-dataflow-graphs/master/ctrl-data.png)
 
 
-[ctrl-data.png]: ctrl-data.png

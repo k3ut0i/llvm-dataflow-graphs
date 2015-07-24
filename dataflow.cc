@@ -37,6 +37,13 @@ bool datautils::DataWorker::runOnModule(llvm::Module &M){/*{{{*/
                 ++previous;
                 func_nodes_ctrl[&*FI].push_back(node(II, datautils::getvaluestaticname(II)));
                 if(previous != IE)func_edges_ctrl[&*FI].push_back(edge(node(II, datautils::getvaluestaticname(II)), node(previous, datautils::getvaluestaticname(previous))));
+                for(llvm::Instruction::op_iterator op = II->op_begin(), ope = II->op_end(); op != ope; ++op)
+                {
+                    if(llvm::dyn_cast<llvm::Instruction>(*op)||llvm::dyn_cast<llvm::Argument>(*op))
+                    {
+                        data_flow_edges.push_back(edge(node(op->get(), datautils::getvaluestaticname(op->get())), node(II, datautils::getvaluestaticname(II))));
+                    }
+                }
             }
 
             llvm::TerminatorInst* TI = BB->getTerminator();
@@ -53,7 +60,7 @@ bool datautils::DataWorker::runOnModule(llvm::Module &M){/*{{{*/
     return false;
 }/*}}}*/
 
-bool datautils::DataWorker::dumpCompleteDiGraph(std::ofstream& Out){
+bool datautils::DataWorker::dumpCompleteDiGraph(std::ofstream& Out){/*{{{*/
     Out << indent << "digraph \"control_and_data_flow\"{\n";
     indent = "\t";
     Out << indent << "subgraph cluster_globals{\n";
@@ -73,28 +80,36 @@ bool datautils::DataWorker::dumpCompleteDiGraph(std::ofstream& Out){
         indent = "\t";
         Out << indent << "}\n\n";
     }
+    datautils::DataWorker::dumpDataflowEdges(Out);
     Out << indent << "label=control_and_data_flow_graph;\n";
     indent = "";
     Out << indent << "}\n";
     return false;
-}
+}/*}}}*/
 
-bool datautils::DataWorker::dumpNodes(std::ofstream& Out, llvm::Function &F){
+bool datautils::DataWorker::dumpNodes(std::ofstream& Out, llvm::Function &F){/*{{{*/
     for(auto node_l: func_nodes_ctrl[&F])
         Out << indent << "\tNode" << node_l.first << "[shape=record, label=\"" << node_l.second << "\"];\n";
     return false;
-}
+}/*}}}*/
 
-bool datautils::DataWorker::dumpControlflowEdges(std::ofstream& Out, llvm::Function &F)
+bool datautils::DataWorker::dumpControlflowEdges(std::ofstream& Out, llvm::Function &F)/*{{{*/
 {
     for(auto edge_l : func_edges_ctrl[&F])
         Out << indent << "\tNode" << edge_l.first.first << " -> Node" << edge_l.second.first << ";\n";
     return false;
-}
+}/*}}}*/
 
-bool datautils::DataWorker::dumpGlobals(std::ofstream& Out)
+bool datautils::DataWorker::dumpGlobals(std::ofstream& Out)/*{{{*/
 {
     for(auto globalval : globals)
         Out << indent << "\tNode" << globalval.first << "[shape=record, label=\"" << globalval.second << "\"];\n";
     return false;
-}
+}/*}}}*/
+
+bool datautils::DataWorker::dumpDataflowEdges(std::ofstream& Out)/*{{{*/
+{
+    for(auto edge_l : data_flow_edges)
+        Out << indent << "\tNode" << edge_l.first.first << " -> Node" << edge_l.second.first << "[color=red];\n";
+    return false;
+}/*}}}*/
