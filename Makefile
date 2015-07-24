@@ -3,8 +3,8 @@
 
 all: libdataflow.so
 
-libdataflow.so: dataflow.cc dataflow.h
-	clang++ `llvm-config --cxxflags --ldflags --libs` --shared -o libdataflow.so dataflow.cc
+libdataflow.so: dataflow.cc dataflow.h llvm_utils.h llvm_utils.cc
+	clang++ `llvm-config --cxxflags --ldflags --libs` --shared -o libdataflow.so dataflow.cc llvm_utils.cc
 
 VectorProduct.bc: VectorProduct.c
 	clang -emit-llvm -c VectorProduct.c

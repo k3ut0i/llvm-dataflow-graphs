@@ -8,20 +8,28 @@
 #include <iostream>
 #include <fstream>
 
+#include "llvm_utils.h"
+
 namespace datautils{
     typedef std::pair<llvm::Value*, std::string> node;
     typedef std::pair<node, node> edge;
+    typedef std::list<node> node_list;
+    typedef std::list<edge> edge_list;
     struct DataWorker : llvm::ModulePass{
     static char ID;
     DataWorker();
     bool runOnModule(llvm::Module &M);
         private:
-    bool dumpDataflowEdges(std::ofstream&);
-    bool dumpNodes(std::ofstream&);
-    bool dumpControlflowEdges(std::ofstream&);
+    bool dumpGlobals(std::ofstream &);
+    bool dumpDataflowEdges(std::ofstream&, llvm::Function &);
+    bool dumpNodes(std::ofstream&, llvm::Function &);
+    bool dumpControlflowEdges(std::ofstream&, llvm::Function &);
+    bool dumpFunction(std::ofstream&, llvm::Function &);
     bool dumpCompleteDiGraph(std::ofstream&);
-    std::list<node> node_list;
-    std::list<edge> edge_list;
+    
+    std::list<node> globals;
+    std::map<llvm::Function*, edge_list> func_edges;
+    std::map<llvm::Function*, node_list> func_nodes;
     };
     static unsigned int num = 0;
     std::string getvaluestaticname(llvm::Value* val)
@@ -29,6 +37,8 @@ namespace datautils{
         std::string ret_val = "val";
         if(val->getName().empty()) {ret_val += std::to_string(num);num++;}
         else ret_val = val->getName().str();
+
+        if(llvm::isa<llvm::Instruction>(val))ret_val += ":"+llvmutils::LLVMInstructionAsString(llvm::dyn_cast<llvm::Instruction>(val));
 
         return ret_val;
     }

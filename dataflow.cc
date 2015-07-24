@@ -1,4 +1,5 @@
 #include "dataflow.h"
+#include "llvm_utils.h"
 
 #include <llvm/Support/raw_ostream.h>
 
@@ -18,12 +19,14 @@ bool datautils::DataWorker::runOnModule(llvm::Module &M){/*{{{*/
             ++globalVariableIdx)
     {
         //llvm::errs() << *globalVariableIdx << "\n";
-        node_list.push_back(node(globalVariableIdx,globalVariableIdx->getName().str()));
+        globals.push_back(node(globalVariableIdx,globalVariableIdx->getName().str()));
 
     }
 
     for(auto FI = M.getFunctionList().begin(), FE = M.getFunctionList().end(); FI != FE; ++FI)
     {
+        //TODO:Get a fucntion wise list so the operands defined in the function make sense when
+        //use in store instructions. else in the graph they appear outof nowhere.
 
         for(auto BB = FI->getBasicBlockList().begin(), BE = FI->getBasicBlockList().end(); BB != BE; ++BB)
         {
@@ -32,8 +35,8 @@ bool datautils::DataWorker::runOnModule(llvm::Module &M){/*{{{*/
             {
                 llvm::BasicBlock::iterator previous = II;
                 ++previous;
-                node_list.push_back(node(II, datautils::getvaluestaticname(II)));
-                edge_list.push_back(edge(node(II, datautils::getvaluestaticname(II)), node(previous, datautils::getvaluestaticname(previous))));
+                func_nodes[&*FI].push_back(node(II, datautils::getvaluestaticname(II)));
+                func_edges[&*FI].push_back(edge(node(II, datautils::getvaluestaticname(II)), node(previous, datautils::getvaluestaticname(previous))));
             }
         }
     }
@@ -44,20 +47,35 @@ bool datautils::DataWorker::runOnModule(llvm::Module &M){/*{{{*/
 
 bool datautils::DataWorker::dumpCompleteDiGraph(std::ofstream& Out){
     Out << "digraph \"control_and_data_flow\"{\n";
-    if(datautils::DataWorker::dumpNodes(Out)) return true;
-    if(datautils::DataWorker::dumpControlflowEdges(Out)) return true;
+    if(datautils::DataWorker::dumpGlobals(Out))return true;
+    for(auto func_node_pair : func_nodes)
+    {
+        Out << "subgraph \"" << func_node_pair.first->getName().str() << "\"{\n";
+        Out << "style=filled;\n";
+        Out << "label=\""<< func_node_pair.first->getName().str() << "\";\n";
+        if(datautils::DataWorker::dumpNodes(Out, *func_node_pair.first)) return true;
+        if(datautils::DataWorker::dumpControlflowEdges(Out, *func_node_pair.first)) return true;
+        Out << "}";
+    }
     Out << "}\n";
 return false;}
 
-bool datautils::DataWorker::dumpNodes(std::ofstream& Out){
-    for(auto node_l: node_list)
-        Out << "\tNode" << node_l.first << "[shape=record, label=\"" << node_l.second << "\"]\n";
+bool datautils::DataWorker::dumpNodes(std::ofstream& Out, llvm::Function &F){
+    for(auto node_l: func_nodes[&F])
+        Out << "\tNode" << node_l.first << "[shape=record, label=\"" << node_l.second << "\"];\n";
     return false;
 }
 
-bool datautils::DataWorker::dumpControlflowEdges(std::ofstream& Out)
+bool datautils::DataWorker::dumpControlflowEdges(std::ofstream& Out, llvm::Function &F)
 {
-    for(auto edge_l : edge_list)
-        Out << "\tNode" << edge_l.first.first << " -> Node" << edge_l.second.first << "\n";
+    for(auto edge_l : func_edges[&F])
+        Out << "\tNode" << edge_l.first.first << " -> Node" << edge_l.second.first << ";\n";
+    return false;
+}
+
+bool datautils::DataWorker::dumpGlobals(std::ofstream& Out)
+{
+    for(auto globalval : globals)
+        Out << "\tNode" << globalval.first << "[shape=record, label=\"" << globalval.second << "\"];\n";
     return false;
 }
