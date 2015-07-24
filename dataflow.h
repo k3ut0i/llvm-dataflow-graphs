@@ -24,14 +24,16 @@ namespace datautils{
         bool dumpDataflowEdges(std::ofstream&, llvm::Function &);
         bool dumpNodes(std::ofstream&, llvm::Function &);
         bool dumpControlflowEdges(std::ofstream&, llvm::Function &);
+        bool dumpFunctionArguments(std::ofstream&, llvm::Function&);
         bool dumpDataflowEdges(std::ofstream&);
-        bool dumpFunction(std::ofstream&, llvm::Function &);
+        bool dumpFunctionCalls(std::ofstream&);
         bool dumpCompleteDiGraph(std::ofstream&);
         std::string indent = "";
         std::list<node> globals;
         std::map<llvm::Function*, edge_list> func_edges_ctrl;
         std::map<llvm::Function*, node_list> func_nodes_ctrl;
-
+        std::map<llvm::Value*, llvm::Function*> func_calls;
+        std::map<llvm::Function*, node_list> func_args;
         edge_list data_flow_edges;
     };
     static unsigned int num = 0;

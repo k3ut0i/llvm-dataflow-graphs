@@ -30,9 +30,24 @@ bool datautils::DataWorker::runOnModule(llvm::Module &M){/*{{{*/
 
         for(auto BB = FI->getBasicBlockList().begin(), BE = FI->getBasicBlockList().end(); BB != BE; ++BB)
         {
-
             for(auto II = BB->begin(), IE = BB->end(); II != IE; ++II)
             {
+                switch(II->getOpcode()){
+                    case llvm::Instruction::Call:
+                        {
+                            llvm::CallInst * callinst = llvm::dyn_cast<llvm::CallInst>(II);
+                            llvm::Function * func = callinst->getCalledFunction();
+                            func_calls[II]= func;
+                            for(auto arg_idx = func->arg_begin(), arg_end = func->arg_end();arg_idx != arg_end; ++arg_idx)
+                            {
+                                func_args[func].push_back(node(arg_idx, datautils::getvaluestaticname(arg_idx)));
+                                data_flow_edges.push_back(edge(node(II, datautils::getvaluestaticname(II)), node(arg_idx, datautils::getvaluestaticname(arg_idx))));
+                            }
+                        }
+                        break;
+                }
+
+
                 llvm::BasicBlock::iterator previous = II;
                 ++previous;
                 func_nodes_ctrl[&*FI].push_back(node(II, datautils::getvaluestaticname(II)));
@@ -63,24 +78,28 @@ bool datautils::DataWorker::runOnModule(llvm::Module &M){/*{{{*/
 bool datautils::DataWorker::dumpCompleteDiGraph(std::ofstream& Out){/*{{{*/
     Out << indent << "digraph \"control_and_data_flow\"{\n";
     indent = "\t";
+    Out << indent << "compound=true;\n";
+    Out << indent << "nodesep=1.0;\n";
     Out << indent << "subgraph cluster_globals{\n";
     Out << indent << "label=globalvaldefinitions;\n";
     Out << indent << "color=green;\n";
-    if(datautils::DataWorker::dumpGlobals(Out))return true;
+    if(dumpGlobals(Out))return true;
     Out << indent << "}\n";
     for(auto func_node_pair : func_nodes_ctrl)
     {
         indent = "\t";
+        if(dumpFunctionArguments(Out, *func_node_pair.first)) return true;
         Out << indent << "subgraph cluster_" << func_node_pair.first->getName().str() << "{\n";
         indent = "\t\t";
         Out << indent << "label=\""<< func_node_pair.first->getName().str() << "\";\n";
         Out << indent << "color=blue;\n";
-        if(datautils::DataWorker::dumpNodes(Out, *func_node_pair.first)) return true;
-        if(datautils::DataWorker::dumpControlflowEdges(Out, *func_node_pair.first)) return true;
+        if(dumpNodes(Out, *func_node_pair.first)) return true;
+        if(dumpControlflowEdges(Out, *func_node_pair.first)) return true;
         indent = "\t";
         Out << indent << "}\n\n";
     }
-    datautils::DataWorker::dumpDataflowEdges(Out);
+    dumpDataflowEdges(Out);
+    dumpFunctionCalls(Out);
     Out << indent << "label=control_and_data_flow_graph;\n";
     indent = "";
     Out << indent << "}\n";
@@ -113,3 +132,17 @@ bool datautils::DataWorker::dumpDataflowEdges(std::ofstream& Out)/*{{{*/
         Out << indent << "\tNode" << edge_l.first.first << " -> Node" << edge_l.second.first << "[color=red];\n";
     return false;
 }/*}}}*/
+
+bool datautils::DataWorker::dumpFunctionCalls(std::ofstream& Out)
+{
+    for(auto call_l : func_calls)
+        Out << indent << "\tNode" << call_l.first << "-> Node" << call_l.second->front().begin() << "[lhead = cluster_"<< call_l.second->getName().str()<<"];\n";
+    return false;
+}
+
+bool datautils::DataWorker::dumpFunctionArguments(std::ofstream& Out, llvm::Function &F)
+{
+    for(auto arg_l : func_args[&F])
+        Out << indent << "\tNode" << arg_l.first<<"[label="<<arg_l.second<<", color=yellow, fillcolor=red];\n";
+return false;
+}
