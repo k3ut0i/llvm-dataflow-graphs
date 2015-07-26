@@ -133,16 +133,16 @@ bool datautils::DataWorker::dumpDataflowEdges(std::ofstream& Out)/*{{{*/
     return false;
 }/*}}}*/
 
-bool datautils::DataWorker::dumpFunctionCalls(std::ofstream& Out)
+bool datautils::DataWorker::dumpFunctionCalls(std::ofstream& Out)/*{{{*/
 {
     for(auto call_l : func_calls)
-        Out << indent << "\tNode" << call_l.first << "-> Node" << call_l.second->front().begin() << "[lhead = cluster_"<< call_l.second->getName().str()<<"];\n";
+        Out << indent << "\tNode" << call_l.second->front().begin() << " -> Node"<< call_l.first <<"[ltail = cluster_"<< call_l.second->getName().str()<<", color=red, label=return];\n";
     return false;
-}
+}/*}}}*/
 
-bool datautils::DataWorker::dumpFunctionArguments(std::ofstream& Out, llvm::Function &F)
+bool datautils::DataWorker::dumpFunctionArguments(std::ofstream& Out, llvm::Function &F)/*{{{*/
 {
     for(auto arg_l : func_args[&F])
-        Out << indent << "\tNode" << arg_l.first<<"[label="<<arg_l.second<<", color=yellow, fillcolor=red];\n";
+        Out << indent << "\tNode" << arg_l.first<<"[label="<<arg_l.second<<", shape=doublecircle, style=filled, color=blue , fillcolor=red];\n";
 return false;
-}
+}/*}}}*/
