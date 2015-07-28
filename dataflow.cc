@@ -45,6 +45,19 @@ bool datautils::DataWorker::runOnModule(llvm::Module &M){/*{{{*/
                             }
                         }
                         break;
+                    case llvm::Instruction::Store:
+                        {
+                            llvm::StoreInst* storeinst = llvm::dyn_cast<llvm::StoreInst>(II);
+                            llvm::Value* storevalptr = storeinst->getPointerOperand();
+                            data_flow_edges.push_back(edge(node(II, datautils::getvaluestaticname(II)), node(storevalptr, datautils::getvaluestaticname(storevalptr))));
+                        }
+                        break;
+                    case llvm::Instruction::Load:
+                        {
+                            llvm::LoadInst* loadinst = llvm::dyn_cast<llvm::LoadInst>(II);
+                            llvm::Value* loadvalptr = loadinst->getPointerOperand();
+                            data_flow_edges.push_back(edge(node(loadvalptr, datautils::getvaluestaticname(loadvalptr)), node(II, datautils::getvaluestaticname(loadvalptr))));
+                        }break;
                 }
 
 
@@ -106,7 +119,8 @@ bool datautils::DataWorker::dumpCompleteDiGraph(std::ofstream& Out){/*{{{*/
     return false;
 }/*}}}*/
 
-bool datautils::DataWorker::dumpNodes(std::ofstream& Out, llvm::Function &F){/*{{{*/
+bool datautils::DataWorker::dumpNodes(std::ofstream& Out, llvm::Function &F)/*{{{*/
+{
     for(auto node_l: func_nodes_ctrl[&F])
         Out << indent << "\tNode" << node_l.first << "[shape=record, label=\"" << node_l.second << "\"];\n";
     return false;

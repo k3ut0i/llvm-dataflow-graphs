@@ -4,6 +4,9 @@
 
 This is similar to graph-llvm-ir by pfalcon. but there seems to be some problems for it.
 
+This flow is constructed in the context of hdl design. so flow between function calls makes sense
+with design falttening(hdl). Some options to show individual flows may be added later.
+
 Current Status:
 1.  Control flow is good per function. should add?? between function blocks and calling
     statements??.
@@ -19,7 +22,10 @@ TODO:
 1.  The errors.
 2.  struct type single node for arguments of a function.
 3.  edges between functions and calls too cluttered find resonable comprimise.
-
+4.  Hilights for certain nodes and edges based on the results of some optimization passes. _Example_:
+    the nodes which will be removed during some optimization processes. try to use inbuilt passes
+and analyze the diff the resulting ir's to find the missing nodes._Or_ can a copy of the original
+llvm-ir can be kept in memory to analyze the passes.??
 It's sample test code.
 ```c
 #include <stdio.h>
