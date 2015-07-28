@@ -42,6 +42,12 @@ bool datautils::DataWorker::runOnModule(llvm::Module &M){/*{{{*/
                             {
                                 func_args[func].push_back(node(arg_idx, datautils::getvaluestaticname(arg_idx)));
                                 data_flow_edges.push_back(edge(node(II, datautils::getvaluestaticname(II)), node(arg_idx, datautils::getvaluestaticname(arg_idx))));
+                               // ///TODO:Use iterations over the arguments of the functions
+                               // for(llvm::Value::use_iterator UI = arg_idx->use_begin(), UE = arg_idx->use_end(); UI != UE; ++UI)
+                               // {
+
+                               //     data_flow_edges.push_back(edge(node(arg_idx, datautils::getvaluestaticname(arg_idx)), node(UI->get(), datautils::getvaluestaticname(UI->get()))));
+                               // }
                             }
                         }
                         break;
@@ -49,7 +55,9 @@ bool datautils::DataWorker::runOnModule(llvm::Module &M){/*{{{*/
                         {
                             llvm::StoreInst* storeinst = llvm::dyn_cast<llvm::StoreInst>(II);
                             llvm::Value* storevalptr = storeinst->getPointerOperand();
+                            llvm::Value* storeval    = storeinst->getValueOperand();
                             data_flow_edges.push_back(edge(node(II, datautils::getvaluestaticname(II)), node(storevalptr, datautils::getvaluestaticname(storevalptr))));
+                            data_flow_edges.push_back(edge(node(storeval, datautils::getvaluestaticname(storeval)), node(II, datautils::getvaluestaticname(II))));
                         }
                         break;
                     case llvm::Instruction::Load:
@@ -58,6 +66,16 @@ bool datautils::DataWorker::runOnModule(llvm::Module &M){/*{{{*/
                             llvm::Value* loadvalptr = loadinst->getPointerOperand();
                             data_flow_edges.push_back(edge(node(loadvalptr, datautils::getvaluestaticname(loadvalptr)), node(II, datautils::getvaluestaticname(loadvalptr))));
                         }break;
+                    default :
+                        {
+                            for(llvm::Instruction::op_iterator op = II->op_begin(), ope = II->op_end(); op != ope; ++op)
+                            {
+                                if(llvm::dyn_cast<llvm::Instruction>(*op)||llvm::dyn_cast<llvm::Argument>(*op))
+                                {
+                                    data_flow_edges.push_back(edge(node(op->get(), datautils::getvaluestaticname(op->get())), node(II, datautils::getvaluestaticname(II))));
+                                }
+                            }
+                        }break;
                 }
 
 
@@ -65,13 +83,7 @@ bool datautils::DataWorker::runOnModule(llvm::Module &M){/*{{{*/
                 ++previous;
                 func_nodes_ctrl[&*FI].push_back(node(II, datautils::getvaluestaticname(II)));
                 if(previous != IE)func_edges_ctrl[&*FI].push_back(edge(node(II, datautils::getvaluestaticname(II)), node(previous, datautils::getvaluestaticname(previous))));
-                for(llvm::Instruction::op_iterator op = II->op_begin(), ope = II->op_end(); op != ope; ++op)
-                {
-                    if(llvm::dyn_cast<llvm::Instruction>(*op)||llvm::dyn_cast<llvm::Argument>(*op))
-                    {
-                        data_flow_edges.push_back(edge(node(op->get(), datautils::getvaluestaticname(op->get())), node(II, datautils::getvaluestaticname(II))));
-                    }
-                }
+
             }
 
             llvm::TerminatorInst* TI = BB->getTerminator();
@@ -93,6 +105,7 @@ bool datautils::DataWorker::dumpCompleteDiGraph(std::ofstream& Out){/*{{{*/
     indent = "\t";
     Out << indent << "compound=true;\n";
     Out << indent << "nodesep=1.0;\n";
+    Out << indent << "rankdir=TB;\n";
     Out << indent << "subgraph cluster_globals{\n";
     Out << indent << "label=globalvaldefinitions;\n";
     Out << indent << "color=green;\n";
@@ -156,7 +169,8 @@ bool datautils::DataWorker::dumpFunctionCalls(std::ofstream& Out)/*{{{*/
 
 bool datautils::DataWorker::dumpFunctionArguments(std::ofstream& Out, llvm::Function &F)/*{{{*/
 {
+    ///TODO:Argument in graphviz struct style. i.e., as collection of nodes
     for(auto arg_l : func_args[&F])
         Out << indent << "\tNode" << arg_l.first<<"[label="<<arg_l.second<<", shape=doublecircle, style=filled, color=blue , fillcolor=red];\n";
-return false;
+    return false;
 }/*}}}*/
