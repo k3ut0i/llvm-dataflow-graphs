@@ -24,3 +24,6 @@ ctrl-data.png: test-vp
 
 docs:   test-vp graph
 	doxygen docs/Doxyfile
+
+dataflow: test.cc dataflow.cc dataflow.h llvm_utils.h llvm_utils.cc
+	gcc `llvm-config --cxxflags` test.cc dataflow.cc llvm_utils.cc -o dataflow -lstdc++ `llvm-config --libs all` `llvm-config --ldflags` -lm -lpthread -ldl -lncurses -Wall -ggdb

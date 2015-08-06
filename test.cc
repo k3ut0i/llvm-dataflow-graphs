@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
     }
 
     llvm::SMDiagnostic Error;
-    std::unique_ptr<llvm::Module> Mod(parseIRFile(argv[1], Error, llvm::getGlobalContext()));
+    std::unique_ptr<llvm::Module> Mod(llvm::parseIRFile(argv[1], Error, llvm::getGlobalContext()));
     if(!Mod)
     {
         Error.print(argv[0], llvm::errs());
