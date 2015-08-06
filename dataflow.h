@@ -1,3 +1,6 @@
+#ifndef _DATAFLOW_H
+#define _DATAFLOW_H
+
 #include <llvm/IR/Instruction.h>
 #include <llvm/IR/InstrTypes.h>
 #include <llvm/IR/Instructions.h>
@@ -37,14 +40,7 @@ namespace datautils{
         edge_list data_flow_edges;
     };
     static unsigned int num = 0;
-    std::string getvaluestaticname(llvm::Value* val)
-    {
-        std::string ret_val = "val";
-        if(val->getName().empty()) {ret_val += std::to_string(num);num++;}
-        else ret_val = val->getName().str();
-
-        if(llvm::isa<llvm::Instruction>(val))ret_val += ":"+llvmutils::LLVMInstructionAsString(llvm::dyn_cast<llvm::Instruction>(val));
-
-        return ret_val;
-    }
+    std::string getvaluestaticname(llvm::Value* val);
 }
+
+#endif

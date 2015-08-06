@@ -11,8 +11,22 @@ static llvm::RegisterPass<datautils::DataWorker> X("dot-dataflow", "Print data f
 
 datautils::DataWorker::DataWorker() : llvm::ModulePass(ID){}
 
-bool datautils::DataWorker::runOnModule(llvm::Module &M){/*{{{*/
+std::string datautils::getvaluestaticname(llvm::Value* val)
+{
+    std::string ret_val = "val";
+    if(val->getName().empty()) {ret_val += std::to_string(num);num++;}
+    else ret_val = val->getName().str();
 
+    if(llvm::isa<llvm::Instruction>(val))ret_val += ":"+llvmutils::LLVMInstructionAsString(llvm::dyn_cast<llvm::Instruction>(val));
+
+    return ret_val;
+}
+
+bool datautils::DataWorker::runOnModule(llvm::Module &M){/*{{{*/
+    ///TODO: create the graph data structure and then dump it.
+    //
+    ///UPDATE: use exsisting library such as cgraph
+    ///This shit is complicated to debug. Those missing nodes labels are a headache.
     for(auto globalVariableIdx = M.getGlobalList().begin(),
             globalVariableEnd = M.getGlobalList().end();
             globalVariableIdx != globalVariableEnd;
@@ -42,12 +56,12 @@ bool datautils::DataWorker::runOnModule(llvm::Module &M){/*{{{*/
                             {
                                 func_args[func].push_back(node(arg_idx, datautils::getvaluestaticname(arg_idx)));
                                 data_flow_edges.push_back(edge(node(II, datautils::getvaluestaticname(II)), node(arg_idx, datautils::getvaluestaticname(arg_idx))));
-                               // ///TODO:Use iterations over the arguments of the functions
-                               // for(llvm::Value::use_iterator UI = arg_idx->use_begin(), UE = arg_idx->use_end(); UI != UE; ++UI)
-                               // {
+                                // ///TODO:Use iterations over the arguments of the functions
+                                // for(llvm::Value::use_iterator UI = arg_idx->use_begin(), UE = arg_idx->use_end(); UI != UE; ++UI)
+                                // {
 
-                               //     data_flow_edges.push_back(edge(node(arg_idx, datautils::getvaluestaticname(arg_idx)), node(UI->get(), datautils::getvaluestaticname(UI->get()))));
-                               // }
+                                //     data_flow_edges.push_back(edge(node(arg_idx, datautils::getvaluestaticname(arg_idx)), node(UI->get(), datautils::getvaluestaticname(UI->get()))));
+                                // }
                             }
                         }
                         break;
