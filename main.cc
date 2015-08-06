@@ -6,8 +6,8 @@
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/SourceMgr.h>
 
-#include "llvm_utils.h"
-#include "dataflow.h"
+#include "utils/llvm_utils.h"
+#include "flow/dataflow.h"
 
 
 int main(int argc, char* argv[])

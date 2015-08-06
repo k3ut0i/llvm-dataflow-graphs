@@ -1,21 +1,51 @@
-.PHONY:	all test-vp clean docs
+CFLAGS = -Wall -Wextra -ggdb -I./
+CXXFLAGS = -I./ -Wall -ggdb -Wextra
+LLVM_CXXFLAGS = $(shell llvm-config --cxxflags)
 
+
+LLVM_LIBS = $(shell llvm-config --libs)
+LLVM_LDFLAGS = $(shell llvm-config --ldflags)
+LDLIBS = -lm -lpthread -ldl -lncurses
+
+CXX = $(shell which clang++)
+C   = $(shell which clang)
+
+OBJS =
+EXES =
+LIBS =
+
+
+OBJS += flow/dataflow.o
+OBJS += utils/llvm_utils.o
+
+EXES += dataflow
+
+LIBS += libdataflow.so
+
+.PHONY:	all test-vp clean docs
 
 all: libdataflow.so
 
-libdataflow.so: dataflow.cc dataflow.h llvm_utils.h llvm_utils.cc
-	clang++ `llvm-config --cxxflags --ldflags --libs` --shared -o libdataflow.so dataflow.cc llvm_utils.cc
+%.o: %.cc
+	$(CXX) -o $@ $(CXXFLAGS) $(LLVM_CXXFLAGS) -c $<
 
-VectorProduct.bc: VectorProduct.c
-	clang -emit-llvm -c VectorProduct.c
+libdataflow.so: $(OBJS)
+	$(CXX) --shared -o libdataflow.so $(OBJS) $(LLVM_LDFLAGS) $(LLVM_LIBS)
 
-test-vp: libdataflow.so VectorProduct.bc VectorProduct.c
+%.bc: %.c
+	$(C) -o $@ $(CFLAGS) -emit-llvm -c $<
+
+dataflow: main.cc $(OBJS)
+	$(CXX) $(CXXFLAGS) $(LLVM_CXXFLAGS) main.cc $(OBJS) -o dataflow $(LLVM_LIBS) $(LLVM_LDFLAGS) $(LDLIBS)
+
+
+test-vp: libdataflow.so samples/VectorProduct.bc
 	@echo "----------Running dataflow on VectorProduct.c file------------"
-	opt --load ./libdataflow.so -dot-dataflow VectorProduct.bc -disable-output
+	opt --load ./libdataflow.so -dot-dataflow samples/VectorProduct.bc -disable-output
 	@echo "-----------------------End of test----------------------------"
 
 clean:
-	rm -rf libdataflow.so
+	rm -rf $(OBJS) $(EXES) $(LIBS)
 
 graph: ctrl-data.png
 
@@ -24,6 +54,3 @@ ctrl-data.png: test-vp
 
 docs:   test-vp graph
 	doxygen docs/Doxyfile
-
-dataflow: test.cc dataflow.cc dataflow.h llvm_utils.h llvm_utils.cc
-	gcc `llvm-config --cxxflags` test.cc dataflow.cc llvm_utils.cc -o dataflow -lstdc++ `llvm-config --libs all` `llvm-config --ldflags` -lm -lpthread -ldl -lncurses -Wall -ggdb
