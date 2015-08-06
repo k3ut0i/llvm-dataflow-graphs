@@ -5,5 +5,5 @@
 *dot
 *.ll
 docs
-test
 dataflow
+*.out
