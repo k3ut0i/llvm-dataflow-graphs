@@ -4,6 +4,8 @@
 
 #include <llvm/IR/Type.h>
 #include <llvm/IR/Instruction.h>
+#include <llvm/IR/Constants.h>
+#include <llvm/IR/LLVMContext.h>
 #include <llvm/Support/raw_ostream.h>
 
 
