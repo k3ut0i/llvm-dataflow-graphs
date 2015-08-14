@@ -28,23 +28,7 @@ and analyze the diff the resulting ir's to find the missing nodes._Or_ can a cop
 llvm-ir can be kept in memory to analyze the passes.??
 It's sample test code.
 ```c
-#include <stdio.h>
-
-int f0(int x0 , int x1){
-    int ans = 0;
-    ans += (x0>x1)? x0: x1;
-    return ans;
-}
-
-int piped_x0, piped_x1;
-
-int main()
-{
-    piped_x0 = 0;
-    piped_x1 = 1;
-    printf("%d\n", f0(piped_x0, piped_x1));
-}
-
+!inc(samples/VectorProduct.c)
 ```
 Output Dot image
 ![dotfile](https://raw.githubusercontent.com/k3ut0i/llvm-dataflow-graphs/master/ctrl-data.png)

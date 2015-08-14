@@ -177,7 +177,7 @@ bool datautils::DataWorker::dumpDataflowEdges(std::ofstream& Out)/*{{{*/
 bool datautils::DataWorker::dumpFunctionCalls(std::ofstream& Out)/*{{{*/
 {
     for(auto call_l : func_calls)
-        Out << indent << "\tNode" << call_l.second->front().begin() << " -> Node"<< call_l.first <<"[ltail = cluster_"<< call_l.second->getName().str()<<", color=red, label=return];\n";
+        Out << indent << "\tNode" << call_l.second->front().begin() << " -> Node"<< call_l.first <<"[ltail = cluster_"<< remove_special_chars(call_l.second->getName().str())<<", color=red, label=return];\n";
     return false;
 }/*}}}*/
 
@@ -188,3 +188,15 @@ bool datautils::DataWorker::dumpFunctionArguments(std::ofstream& Out, llvm::Func
         Out << indent << "\tNode" << arg_l.first<<"[label="<<arg_l.second<<", shape=doublecircle, style=filled, color=blue , fillcolor=red];\n";
     return false;
 }/*}}}*/
+
+std::string datautils::DataWorker::remove_special_chars(std::string in_str)
+{
+    std::string ret_val = in_str;
+    size_t pos;
+    while((pos = ret_val.find('.')) != std::string::npos)
+    {
+        ret_val[pos] = '_';
+    }
+
+    return ret_val;
+}

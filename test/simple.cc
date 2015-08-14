@@ -39,7 +39,16 @@ TEST_F(UtilTest, LLVMTYPEASSTRING) {
     //std::cout << llvmutils::LLVMTypeAsString(int_32_llvm_ir_type->getType()) << std::endl;
     EXPECT_EQ(output,llvmutils::LLVMTypeAsString(int_32_llvm_ir_type->getType()));
 }
-GTEST_API_ int main(int argc, char **argv) {
+
+TEST_F(UtilTest, LLVM_INSTRUCTION_AS_STRING){
+    const std::string output = "store i32 1, i32* %var_name";
+    llvm::LLVMContext Context;
+    llvm::Value* var_name;
+
+}
+
+
+int main(int argc, char **argv) {
     printf("Running main() from gtest_main.cc\n");
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
