@@ -26,6 +26,8 @@ TODO:
     the nodes which will be removed during some optimization processes. try to use inbuilt passes
 and analyze the diff the resulting ir's to find the missing nodes._Or_ can a copy of the original
 llvm-ir can be kept in memory to analyze the passes.??
+5.  Use and update memorydependence analysis and aliasanalysis for logic instead of custom
+    funcitons. also use llvm in built containers.
 It's sample test code.
 ```c
 !inc(samples/VectorProduct.c)
