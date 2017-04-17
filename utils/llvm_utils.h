@@ -11,6 +11,9 @@
 
 ///The implementqation of llvmtypeasstring fucntion was copied from some code which i don't remember
 ///tell me if anyone cares.
+
+    /// The implementation of LLVMTypeAsString:
+    /// https://github.com/eliben/llvm-clang-samples/blob/master/src_llvm/simple_module_pass.cpp
 namespace llvmutils {
     std::string LLVMTypeAsString(const llvm::Type *T);
     std::string LLVMInstructionAsString(llvm::Instruction *I);
