@@ -12,8 +12,7 @@ LLVM_CXXFLAGS = $(shell $(LLVM_CONF) --cxxflags)
 LLVM_LIBS = 
 # LLVM_LIBS = $(shell $(LLVM_CONF) --libs)
 LLVM_LDFLAGS = $(shell $(LLVM_CONF) --ldflags)
-LDLIBS = 
-# LDLIBS = -lm -lpthread -ldl -lncurses
+LDLIBS = -lm -lpthread -ldl -lncurses
 
 CXX = $(CLANG_BINDIR)/clang
 C   = $(CLANG_BINDIR)/clang
