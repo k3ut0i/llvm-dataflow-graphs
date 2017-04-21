@@ -25,7 +25,7 @@ std::string datautils::getvaluestaticname(llvm::Value* val)
 bool datautils::DataWorker::runOnModule(llvm::Module &M){/*{{{*/
     ///TODO: create the graph data structure and then dump it.
     //
-    ///UPDATE: use exsisting library such as cgraph
+    ///UPDATE: use existing library such as cgraph
     ///This shit is complicated to debug. Those missing nodes labels are a headache.
     for(auto globalVariableIdx = M.getGlobalList().begin(),
             globalVariableEnd = M.getGlobalList().end();
@@ -33,13 +33,13 @@ bool datautils::DataWorker::runOnModule(llvm::Module &M){/*{{{*/
             ++globalVariableIdx)
     {
         //llvm::errs() << *globalVariableIdx << "\n";
-        globals.push_back(node(globalVariableIdx,globalVariableIdx->getName().str()));
+        globals.push_back(node(&*globalVariableIdx,globalVariableIdx->getName().str()));
 
     }
 
     for(auto FI = M.getFunctionList().begin(), FE = M.getFunctionList().end(); FI != FE; ++FI)
     {
-        //TODO:Get a fucntion wise list so the operands defined in the function make sense when
+        //TODO:Get a function wise list so the operands defined in the function make sense when
         //use in store instructions. else in the graph they appear outof nowhere.
 
         for(auto BB = FI->getBasicBlockList().begin(), BE = FI->getBasicBlockList().end(); BB != BE; ++BB)
@@ -51,11 +51,11 @@ bool datautils::DataWorker::runOnModule(llvm::Module &M){/*{{{*/
                         {
                             llvm::CallInst * callinst = llvm::dyn_cast<llvm::CallInst>(II);
                             llvm::Function * func = callinst->getCalledFunction();
-                            func_calls[II]= func;
+                            func_calls[&*II]= func;
                             for(auto arg_idx = func->arg_begin(), arg_end = func->arg_end();arg_idx != arg_end; ++arg_idx)
                             {
-                                func_args[func].push_back(node(arg_idx, datautils::getvaluestaticname(arg_idx)));
-                                data_flow_edges.push_back(edge(node(II, datautils::getvaluestaticname(II)), node(arg_idx, datautils::getvaluestaticname(arg_idx))));
+                                func_args[func].push_back(node(&*arg_idx, datautils::getvaluestaticname(&*arg_idx)));
+                                data_flow_edges.push_back(edge(node(&*II, datautils::getvaluestaticname(&*II)), node(&*arg_idx, datautils::getvaluestaticname(&*arg_idx))));
                                 // ///TODO:Use iterations over the arguments of the functions
                                 // for(llvm::Value::use_iterator UI = arg_idx->use_begin(), UE = arg_idx->use_end(); UI != UE; ++UI)
                                 // {
@@ -70,15 +70,15 @@ bool datautils::DataWorker::runOnModule(llvm::Module &M){/*{{{*/
                             llvm::StoreInst* storeinst = llvm::dyn_cast<llvm::StoreInst>(II);
                             llvm::Value* storevalptr = storeinst->getPointerOperand();
                             llvm::Value* storeval    = storeinst->getValueOperand();
-                            data_flow_edges.push_back(edge(node(II, datautils::getvaluestaticname(II)), node(storevalptr, datautils::getvaluestaticname(storevalptr))));
-                            data_flow_edges.push_back(edge(node(storeval, datautils::getvaluestaticname(storeval)), node(II, datautils::getvaluestaticname(II))));
+                            data_flow_edges.push_back(edge(node(&*II, datautils::getvaluestaticname(&*II)), node(storevalptr, datautils::getvaluestaticname(storevalptr))));
+                            data_flow_edges.push_back(edge(node(storeval, datautils::getvaluestaticname(storeval)), node(&*II, datautils::getvaluestaticname(&*II))));
                         }
                         break;
                     case llvm::Instruction::Load:
                         {
                             llvm::LoadInst* loadinst = llvm::dyn_cast<llvm::LoadInst>(II);
                             llvm::Value* loadvalptr = loadinst->getPointerOperand();
-                            data_flow_edges.push_back(edge(node(loadvalptr, datautils::getvaluestaticname(loadvalptr)), node(II, datautils::getvaluestaticname(loadvalptr))));
+                            data_flow_edges.push_back(edge(node(loadvalptr, datautils::getvaluestaticname(loadvalptr)), node(&*II, datautils::getvaluestaticname(loadvalptr))));
                         }break;
                     default :
                         {
@@ -86,7 +86,7 @@ bool datautils::DataWorker::runOnModule(llvm::Module &M){/*{{{*/
                             {
                                 if(llvm::dyn_cast<llvm::Instruction>(*op)||llvm::dyn_cast<llvm::Argument>(*op))
                                 {
-                                    data_flow_edges.push_back(edge(node(op->get(), datautils::getvaluestaticname(op->get())), node(II, datautils::getvaluestaticname(II))));
+                                    data_flow_edges.push_back(edge(node(op->get(), datautils::getvaluestaticname(op->get())), node(&*II, datautils::getvaluestaticname(&*II))));
                                 }
                             }
                         }break;
@@ -95,8 +95,8 @@ bool datautils::DataWorker::runOnModule(llvm::Module &M){/*{{{*/
 
                 llvm::BasicBlock::iterator previous = II;
                 ++previous;
-                func_nodes_ctrl[&*FI].push_back(node(II, datautils::getvaluestaticname(II)));
-                if(previous != IE)func_edges_ctrl[&*FI].push_back(edge(node(II, datautils::getvaluestaticname(II)), node(previous, datautils::getvaluestaticname(previous))));
+                func_nodes_ctrl[&*FI].push_back(node(&*II, datautils::getvaluestaticname(&*II)));
+                if(previous != IE)func_edges_ctrl[&*FI].push_back(edge(node(&*II, datautils::getvaluestaticname(&*II)), node(&*previous, datautils::getvaluestaticname(&*previous))));
 
             }
 
@@ -104,7 +104,7 @@ bool datautils::DataWorker::runOnModule(llvm::Module &M){/*{{{*/
             for(unsigned int succ_idx  = 0, succ_num = TI->getNumSuccessors(); succ_idx != succ_num; ++succ_idx)
             {
                 llvm::BasicBlock * Succ = TI->getSuccessor(succ_idx);
-                llvm::Value* succ_inst = Succ->begin();
+                llvm::Value* succ_inst = &*(Succ->begin());
                 func_edges_ctrl[&*FI].push_back(edge(node(TI, datautils::getvaluestaticname(TI)), node(succ_inst, datautils::getvaluestaticname(succ_inst))));
             }
         }
@@ -177,7 +177,7 @@ bool datautils::DataWorker::dumpDataflowEdges(std::ofstream& Out)/*{{{*/
 bool datautils::DataWorker::dumpFunctionCalls(std::ofstream& Out)/*{{{*/
 {
     for(auto call_l : func_calls)
-        Out << indent << "\tNode" << call_l.second->front().begin() << " -> Node"<< call_l.first <<"[ltail = cluster_"<< remove_special_chars(call_l.second->getName().str())<<", color=red, label=return];\n";
+        Out << indent << "\tNode" << &*(call_l.second->front().begin()) << " -> Node"<< call_l.first <<"[ltail = cluster_"<< remove_special_chars(call_l.second->getName().str())<<", color=red, label=return];\n";
     return false;
 }/*}}}*/
 

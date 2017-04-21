@@ -1,14 +1,22 @@
+
+# just modify this line to switch your llvm version
+LLVM_CONF=llvm-config
+
+CLANG_BINDIR = $(shell $(LLVM_CONF) --bindir)
 CFLAGS = -Wall -Wextra -ggdb -I./
 CXXFLAGS = -I./ -Wall -ggdb -Wextra
-LLVM_CXXFLAGS = $(shell llvm-config --cxxflags)
+LLVM_CXXFLAGS = $(shell $(LLVM_CONF) --cxxflags)
 
-
-LLVM_LIBS = $(shell llvm-config --libs)
-LLVM_LDFLAGS = $(shell llvm-config --ldflags)
+# leave empty to prevent error 'xxx is registerd more than once'.
+# this is decided by how clang is installed in your system.
+LLVM_LIBS = 
+# LLVM_LIBS = $(shell $(LLVM_CONF) --libs)
+LLVM_LDFLAGS = $(shell $(LLVM_CONF) --ldflags)
 LDLIBS = -lm -lpthread -ldl -lncurses
 
-CXX = $(shell which clang++)
-C   = $(shell which clang)
+CXX = $(CLANG_BINDIR)/clang
+C   = $(CLANG_BINDIR)/clang
+OPT = $(CLANG_BINDIR)/opt
 
 OBJS =
 EXES =
@@ -41,7 +49,7 @@ dataflow: main.cc $(OBJS)
 
 test-vp: libdataflow.so samples/VectorProduct.bc
 	@echo "----------Running dataflow on VectorProduct.c file------------"
-	opt --load ./libdataflow.so -dot-dataflow samples/VectorProduct.bc -disable-output
+	$(OPT) -load ./libdataflow.so -dot-dataflow samples/VectorProduct.bc -disable-output
 	@echo "-----------------------End of test----------------------------"
 
 clean:
