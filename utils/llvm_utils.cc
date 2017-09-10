@@ -2,7 +2,7 @@
 #include "llvm_utils.h"
 
 
-//TODO: introduce a template kinda thing to do this auto matically
+//TODO: introduce a template kinda thing to do this automatically
 std::string llvmutils::LLVMTypeAsString(const llvm::Type *T)
 {
     std::string typeName;
