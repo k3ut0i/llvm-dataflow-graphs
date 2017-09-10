@@ -5,7 +5,7 @@
 This is similar to graph-llvm-ir by pfalcon. but there seems to be some problems for it.
 
 This flow is constructed in the context of hdl design. so flow between function calls makes sense
-with design falttening(hdl). Some options to show individual flows may be added later.
+with design flattening(hdl). Some options to show individual flows may be added later.
 
 Current Status:
 1.  Control flow is good per function. should add?? between function blocks and calling

@@ -5,4 +5,5 @@ dependencies:
 
 test:
     override:
+      - llvm-config --libs --cflags
         - make test-vp
